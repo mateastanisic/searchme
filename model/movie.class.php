@@ -3,14 +3,13 @@
 //klasa koja predstavlja jedan film
 class Movie{
 
-    protected $moveid, $title, $categories, $summary, $description;
+    protected $moveid, $title, $description, $rank;
 
-    function __construct( $moveid, $title, $categories, $summary, $description ){
+    function __construct( $moveid, $title, $description, $rank){
         $this->moveid = $moveid;
         $this->title = $title;
-        $this->categories = $categories;
-        $this->summary = $summary;
         $this->description = $description;
+        $this->rank = $rank;
     }
 
     function __get( $prop ) { return $this->$prop; }

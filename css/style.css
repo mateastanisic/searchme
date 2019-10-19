@@ -1,2 +1,98 @@
 /* CLASS: left, right*/
 /* ID-evi: menu, page_name */
+
+.left {
+    position: fixed;
+    overflow: auto;
+    top: 5%;
+    width: 20%;
+    text-align: center;
+}
+.right {
+    position: relative;
+    top: 100px;
+    bottom: 5%;
+    margin-left: 30%;
+    margin-right: 5%;
+    height: 100%;
+    right: 5%;
+    float:left;
+}
+.footer{
+    position: fixed;
+    overflow: auto;
+    width: 20%;
+    bottom: 2%;
+    text-align: center;
+}
+#page_name{
+    font-family: 'Fascinate Inline', cursive;
+    cursor: pointer;
+    font-size: 250%;
+}
+#page_name:hover {
+    font-size: 325%;
+}
+body{
+    font-family: 'Montserrat', sans-serif;
+}
+#image{
+    top: 0;
+    left: 0;
+    bottom: 0;
+    position: fixed;
+    width:100%;
+    height:100%;
+    opacity: 0.5;
+}
+
+h4 {
+     cursor: pointer;
+ }
+h4:hover {
+    font-size: 150%;
+}
+
+b {
+    color: orangered;
+}
+
+.nice_input {
+    border: 0;
+    outline: 0;
+    border-bottom:2px solid #595959;
+    padding:.25em .5em .3125em;
+    color:grey;
+    background-color: transparent;
+}
+
+.search_button{
+    background-color: transparent;
+    border: none;
+    color: #595959;
+    padding: 15px 32px;
+    text-align: center;
+    text-decoration: none;
+    font-size: 10px;
+    cursor: pointer;
+    float:center;
+    font-size: 200%;
+    border-radius: 50%;
+}
+
+.oboji{
+    color: blue;
+}
+pre {
+    white-space: pre-wrap;
+}
+input[type=text] {
+    width: 400px;
+}
+
+table{
+    table-layout: fixed;
+}
+td{
+    word-wrap:break-word
+}

@@ -35,7 +35,7 @@ class IndexController extends BaseController
     }
 
     public function search(){
-        if( isset($_POST['new_search']) && $_POST['new_search'] !== '' ){
+        if( isset($_POST['new_search']) && isset($_POST['and_or']) && $_POST['new_search'] !== '' ){
             $and_or = $_POST['and_or'];
             $search_input = $_POST['new_search'];
 
@@ -46,11 +46,15 @@ class IndexController extends BaseController
             $sm = new searchme_service();
             $result = $sm->do_magic($and_or, $search_input);
 
-            $this->registry->template->query = $result[0];
-            $this->registry->template->document_name = $result[1];
-            $this->registry->template->document_rank = $result[2];
-            $this->registry->template->show( 'dashboard' );
-
+            if( $result === false ){
+                $this->registry->template->message = "Search failed!";
+                $this->registry->template->show( 'dashboard' );
+            }
+            else{
+                $this->registry->template->query = $result[0];
+                $this->registry->template->movies = $result[1];
+                $this->registry->template->show( 'dashboard' );
+            }
         }
         else{
             $this->registry->template->message = "Please fill out search box.";

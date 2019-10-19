@@ -1,7 +1,8 @@
 
-<div class="left footer">
-    author: Matea Stanišić <br />
-    jmbag: 1191236619 <br />
+<div class="footer">
+    <small>
+        &copy; <a href="mailto:stmatea@student.math.hr">Matea Stanišić</a><br />
+    </small>
 </div>
 
 <script type="text/javascript">

@@ -1,7 +1,7 @@
 <?php require_once __SITE_PATH . '/view/_header.php'; ?>
 <?php require_once __SITE_PATH . '/view/addnewmovie.php'; ?>
 <?php require_once __SITE_PATH . '/view/searchmovie.php'; ?>
-<?php require_once __SITE_PATH . '/view/analytics.php'; ?>
+<?php require_once __SITE_PATH . '/view/statistics.php'; ?>
 
     <!--makni sve s desne strane-->
     <script type="text/javascript">
@@ -20,7 +20,7 @@
                     echo '<script type="text/javascript">$("#search").show();</script>';
                     break;
                 case '3':
-                    echo '<script type="text/javascript">$("#analytics").show();</script>';
+                    echo '<script type="text/javascript">$("#statistics").show();</script>';
                     break;
             }
             unset($option);
