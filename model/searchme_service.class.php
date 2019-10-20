@@ -247,8 +247,8 @@ class searchme_service {
     function best_five($word){
         try{
             $db = DB::getConnection();
-            $query = 'SELECT ts_headline( title, to_tsquery("english", "'. $word .'") ) AS title, 
-                      similarity(title, "'. $word .'"  ) AS sml FROM movie WHERE title % "'. $word .'" ORDER BY sml DESC, title';
+            $query = "SELECT title, ts_headline( title, to_tsquery('english', '". $word ."') ) AS th, 
+                      similarity(title, '". $word ."' ) AS sml FROM movie WHERE title % '". $word ."' ORDER BY sml DESC, title";
             $sm = $db->prepare( $query );
             $sm->execute( );
         }
@@ -257,10 +257,11 @@ class searchme_service {
         $row = $sm->fetch();
         if( $row === false ) return false;
         else {
-            $movies = $row['title'];
+            $movies = "<option value='". $row['title'] ."'>" . $row['th'] . "</option>" ;
             $i = 1;
-            while( $row = $sm->fetch() && $i<5 ){
-                array_push($movies, $row['title']);
+            while( $row = $sm->fetch() ){
+                if( $i > 5 ) return $movies;
+                $movies = $movies ."<option value='". $row['title'] ."'>" . $row['th'] . "</option>";
                 $i++;
             }
             return $movies;

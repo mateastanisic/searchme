@@ -63,6 +63,21 @@ class IndexController extends BaseController
         }
     }
 
+    public function autocomplite(){
+        if( !isset( $_GET['q'] ) ) echo "Input was not set.";
+        else {
+            $word = $_GET['q'];
+            // Pronađi sve tražene filmove
+            $sm = new searchme_service();
+            $autocomplite = $sm->best_five($word);
+
+            if( $autocomplite === false )  echo "";
+            else echo $autocomplite;
+        }
+    }
+
+
+
 }; 
 
 ?>
