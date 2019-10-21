@@ -40,7 +40,7 @@
         if( isset($query)  && isset($movies) && strlen($query) ){
             //dobili smo neki ispis
             //traba ispisati rezultat pretraživanja
-            echo '<h2> Search result:</h2>';
+            echo '<h2> search result:</h2>';
 
 
             echo 'Query string: ';?>
@@ -50,7 +50,7 @@
 
             if( is_array($movies) ){
                 echo '<p> Number of movies found: <b>', count($movies),'</b></p>';
-                echo '<table>';
+                echo '<table id="searchme_table">';
                 echo '<tr><td> MOVIE NAME &nbsp;</td> <td> MOVIE DESCRIPTION </td> <td> RANK </td></tr>';
                 foreach($movies as $i=>$movie){
                     echo '<tr>';
@@ -66,7 +66,7 @@
             unset($query);
             unset($movies);
         }
-        else if( isset($message) && strlen($message) ) {
+        else if( isset($message) && strlen($message) && $option === '2' ) {
             //nismo ništa upisali u search box
             echo '<p>', $message, '</p>';
             unset($message);
@@ -85,6 +85,8 @@
         //kad netko tipka u input radi ....
         txt.on( "input", function(event) {
             var unos = $(this).val();
+            $( "#datalist_movies" ).empty();
+            $( "#datalist_movies_2" ).empty();
 
             //napravi Ajax poziv sa GET i dobij sve filmove (movie title) koja sadrže unos kao podstring
             $.ajax(

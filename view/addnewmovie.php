@@ -3,7 +3,7 @@
 
     <!-- ako smo u prethodnom slučaju dodali neki film treba se ispisti poruka o usješnom dodavanju filma u bazu -->
     <!--ispiši odgovarajuću poruku-->
-    <div class="message_on_right"> 	<?php if( isset($message) && strlen($message) ) echo $message; ?> </div>
+    <div class="message_on_right"> 	<?php if( isset($message) && strlen($message) && $option === '1' ) echo $message; ?> </div>
 
     <form method="post" action="<?php echo __SITE_URL; ?>/index.php?rt=index/add_new_movie" enctype="multipart/form-data" >
         <table>
@@ -42,7 +42,7 @@
         </table>
 
         <br /><br />
-        <button type="submit" class="button_to_right" >Add movie</button> <br /><br />
+        <button type="submit" class="button_to_right" >add movie</button> <br /><br />
     </form>
 
 </div>

@@ -76,7 +76,39 @@ class IndexController extends BaseController
         }
     }
 
+    public function statistics(){
+	    if( isset( $_POST['start'] ) && isset($_POST['end']) && $_POST['start'] !== '' && $_POST['end'] !== '' ){
+            $hour_or_date = $_POST['date_hour'];
+            $start_date = $_POST['start'];
+            $end_date = $_POST['end'];
 
+            $this->registry->template->option = '3';
+            $this->registry->template->start = $start_date;
+            $this->registry->template->end = $end_date;
+            $this->registry->template->hour_or_date = $hour_or_date;
+
+            $sm = new searchme_service();
+            $table = $sm->granulate($hour_or_date, $start_date, $end_date);
+            if( $table === false ){
+                $this->registry->template->message = "Analysis gone wrong?!!";
+                $this->registry->template->show( 'dashboard' );
+            }
+            else if( $table === "Please choose dates correctly!" ){
+                $this->registry->template->message = $table;
+                $this->registry->template->show( 'dashboard' );
+            }
+            $this->registry->template->header = $table[0];
+            $this->registry->template->rows = $table[1];
+            $this->registry->template->show( 'dashboard' );
+        }
+	    else{
+            $this->registry->template->option = '3';
+            $this->registry->template->message = "Please choose dates!";
+            $this->registry->template->show( 'dashboard' );
+        }
+
+
+    }
 
 }; 
 

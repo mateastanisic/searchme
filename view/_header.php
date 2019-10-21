@@ -6,7 +6,7 @@
 	<link rel="stylesheet" href="<?php echo __SITE_URL;?>/css/style.css">
     <link href="https://fonts.googleapis.com/css?family=Cutive+Mono|Fascinate+Inline|Montserrat&display=swap" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.js"> </script >
-    </head>
+</head>
 <body>
     <img src="https://raw.githubusercontent.com/mateastanisic/image/master/faded.jpg" alt="Movies" id="image">
 	<div id="menu" class="left">

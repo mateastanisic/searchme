@@ -20,19 +20,21 @@
             switch( id.substr(2) ) {
                 case '1':
                     $("#search").hide();
-                    $("#analytics").hide();
+                    $("#statistics").hide();
                     $("#add_new").show();
+                    console.log("here1");
                     break;
                 case '2':
                     $("#add_new").hide();
-                    $("#analytics").hide();
+                    $("#statistics").hide();
                     $("#search").show();
+                    console.log("here2");
                     break;
                 case '3':
                     $("#search").hide();
                     $("#add_new").hide();
-                    $("#analytics").show();
-                    //zapravo ćemo ovdje nešto drugačije ali neka bude tako za početak
+                    $("#statistics").show();
+                    console.log("here3");
                     break;
                 default:
                     $(".right").hide();

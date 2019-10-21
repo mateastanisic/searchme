@@ -64,6 +64,7 @@ b {
     padding:.25em .5em .3125em;
     color:grey;
     background-color: transparent;
+    width: 400px;
 }
 
 .search_button{
@@ -86,13 +87,29 @@ b {
 pre {
     white-space: pre-wrap;
 }
-input[type=text] {
-    width: 400px;
-}
-
 table{
     table-layout: fixed;
 }
 td{
     word-wrap:break-word
 }
+
+.tab{
+    padding-left: 50px;
+}
+
+
+.crtaj {
+    text-align:center;
+    border-collapse: separate;
+}
+
+tr.crtaj, td.crtaj{
+    border-top: 1px black solid;
+}
+
+td.crtaj{
+    height: 60px;
+    width: 125px;
+}
+

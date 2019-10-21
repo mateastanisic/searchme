@@ -69,7 +69,7 @@ class searchme_service {
 
         //i napokon, treba napraviti upit za search i rank
         //funkcija vraća query s kojim smo doznali "rezultat" i rezultat pretraživanja baze
-        return  $this->found_movies_with_rank($tsquery);
+        return  $this->found_movies_with_rank_and_update_search_history($tsquery);
     }
 
     function check_if_there_is_allmovietsv_attribute(){
@@ -201,7 +201,7 @@ class searchme_service {
         return $tsquery;
     }
 
-    function found_movies_with_rank($tsquery){
+    function found_movies_with_rank_and_update_search_history($tsquery){
         //imamo varijablu $tsquery(polje), koje je duljine 1 ako je operator pretraživanja AND (ili smo pretraživali samo po jednoj frazi/riječi)
         //kako će upit s kojim pretražujemo bazu ovisiti o tome hoće li operator biti OR ili AND ( dio sa operatorom @@ )
         //zasebno ćemo napisati string ovisno o poslanom polju $tsquery
@@ -218,12 +218,24 @@ class searchme_service {
             }
         }
 
+        /* ZA ANALIZU */
+        //za potrebe analize upita kasnije ubacujemo pretraženi upit u prethodno stvorenu tablicu search_history
+        /*
+            CREATE TABLE search_history (
+                search_input text,
+                search_date date,
+                search_time time without time zone
+            );
+         */
+        $this->update_search_history($whole_tsquery);
+
+
         try{
             $db = DB::getConnection();
             //ts_headline() -> To present search results it is ideal to show a part of each document and how it is related to the query.
             $final_query = " SELECT movieid, ts_headline( title, to_tsquery('english', '" . $whole_tsquery . "')) AS title, 
                         ts_headline( description, to_tsquery('english', '" . $whole_tsquery . "')) AS description, 
-                        ts_rank(allmovietsv, to_tsquery('english', '" . $whole_tsquery . "')) AS rank
+                        ts_rank(allmovietsv, to_tsquery('english', '" . $whole_tsquery . "'), 2) AS rank
                         FROM movie WHERE " . $string . " ORDER BY rank DESC";
             $sm = $db->prepare( $final_query );
             $sm->execute( );
@@ -247,8 +259,8 @@ class searchme_service {
     function best_five($word){
         try{
             $db = DB::getConnection();
-            $query = "SELECT title, ts_headline( title, to_tsquery('english', '". $word ."') ) AS th, 
-                      similarity(title, '". $word ."' ) AS sml FROM movie WHERE title % '". $word ."' ORDER BY sml DESC, title";
+            $query = "SELECT title, ts_headline( summary, plainto_tsquery('english', '". $word ."') ) AS th, 
+                      similarity(summary, '". $word ."') AS sml FROM movie WHERE summary % '". $word ."' ORDER BY sml DESC, title";
             $sm = $db->prepare( $query );
             $sm->execute( );
         }
@@ -272,6 +284,178 @@ class searchme_service {
     /*
     --------------------- ANALIZA  -------------------- ----
     */
+    /* pretpostavka o postojećoj tablici
+        CREATE TABLE search_history (
+            search_input text,
+            search_date date,
+            search_time time without time zone
+        );
+    */
+    function update_search_history($search_input){
+        try{
+            $db = DB::getConnection();
+            $search_date = date("Y/m/d");
+            $search_time = date("h:i:s");
+            $query = 'INSERT INTO search_history(search_input, search_date, search_time) VALUES ( :search_input, :search_date, :search_time)';
+            $sm = $db->prepare( $query );
+            $sm->execute( array( 'search_input' => $search_input, 'search_date' => $search_date,'search_time' => $search_time ) );
+        }
+        catch( PDOException $e ) { exit( 'PDO error ' . $e->getMessage() ); }
+
+    }
+
+    /* PIVOTIRANJE po satima/po danima */
+    /* pretpostavka.1. izvrtili smo CREATE EXTENSION tablefunc; */
+    /* pretpostavka.2. postoji tablica hours u bazi sa vrijednostima 0-23 (sati)*/
+    /*
+        CREATE TABLE hours( hour int);
+        INSERT INTO hours VALUES(0);
+	    INSERT INTO hours VALUES(1);
+        INSERT INTO hours VALUES(2);
+        INSERT INTO hours VALUES(3);
+        INSERT INTO hours VALUES(4);
+        INSERT INTO hours VALUES(5);
+        INSERT INTO hours VALUES(6);
+        INSERT INTO hours VALUES(7);
+        INSERT INTO hours VALUES(8);
+        INSERT INTO hours VALUES(9);
+        INSERT INTO hours VALUES(10);
+        INSERT INTO hours VALUES(11);
+        INSERT INTO hours VALUES(12);
+        INSERT INTO hours VALUES(13);
+        INSERT INTO hours VALUES(14);
+        INSERT INTO hours VALUES(15);
+        INSERT INTO hours VALUES(16);
+        INSERT INTO hours VALUES(17);
+        INSERT INTO hours VALUES(18);
+        INSERT INTO hours VALUES(19);
+        INSERT INTO hours VALUES(20);
+        INSERT INTO hours VALUES(21);
+        INSERT INTO hours VALUES(22);
+	    INSERT INTO hours VALUES(23);
+     */
+    function granulate($hour_or_date, $start_date, $end_date){
+        if( $end_date < $start_date ) return "Please choose dates correctly!";
+        else if( $hour_or_date === 'date' ){
+            /* stvori temp table dates od početnog odabranog datuma do završnog odabranog datuma */
+            $this->create_temp_table_days();
+            $header = [];
+
+            $begin = new DateTime($start_date);
+            $end = new DateTime($end_date);
+
+            for($i = $begin; $i <= $end; $i->modify('+1 day')){
+                $date = $i->format("Y-m-d");
+                $this->insert_day_in_temp_table_days($date);
+                $y = substr($date,0,4);
+                $m = substr($date,5,2);
+                $d = substr($date,8,2);
+                $string = 'd' . $y .'_' . $m . '_' . $d;
+                array_push($header, $string);
+            }
+
+            $y_s = substr($start_date,0,4);
+            $m_s = substr($start_date,5,2);
+            $d_s = substr($start_date,8,2);
+            $y_e = substr($end_date,0,4);
+            $m_e = substr($end_date,5,2);
+            $d_e = substr($end_date,8,2);
+            $sqlquery1 = "SELECT search_input, search_date, COUNT(*) FROM search_history WHERE EXTRACT( YEAR FROM search_date ) BETWEEN ". $y_s . " AND " . $y_e ." 
+                          AND EXTRACT( MONTH FROM search_date ) BETWEEN ". $m_s . " AND " . $m_e ." AND EXTRACT( DAY FROM search_date ) BETWEEN ". $d_s . " AND " . $d_e ."  
+                          GROUP BY search_input,search_date ORDER BY search_input, search_date";
+            $sqlquery2 = 'SELECT day FROM days ORDER BY day';
+            $sqlquery3 = '';
+            for ( $i = 0; $i < count($header); $i++ ){
+                $sqlquery3 .= $header[$i] . ' bigint';
+                if( $i !== count($header)-1 ) $sqlquery3 .= ',';
+            }
+
+            //pristupamo bazi za actual pivotiranje
+            try{
+                $db = DB::getConnection();
+                $query = "SELECT * FROM crosstab('". $sqlquery1 . "','". $sqlquery2 ."') AS pivot_table( tsquery TEXT,". $sqlquery3.") ORDER BY tsquery";
+                $sm = $db->prepare( $query );
+                $sm->execute( );
+            }
+            catch( PDOException $e ) { exit( 'PDO error ' . $e->getMessage() ); }
+
+            $rows = [];
+            while( $row = $sm->fetch() ) array_push($rows, $row );
+
+            //obriši privremenu tablicu
+            $this->drop_temp_table_days();
+
+            //vrati
+            if( count($rows) === 0 ) return false;
+            else return [$header, $rows];
+        }
+        else if( $hour_or_date === 'hour' ){
+            $header = ['s0001', 's0102', 's0203', 's0304', 's0405', 's0506',  's0607', 's0708', 's0809', 's0910', 's1011',  's1112',
+                        's1213', 's1314', 's1415', 's1516',  's1617', 's1718', 's1819', 's1920', 's2021', 's2122', 's2223', 's2300'];
+
+            $y_s = substr($start_date,0,4);
+            $m_s = substr($start_date,5,2);
+            $d_s = substr($start_date,8,2);
+            $y_e = substr($end_date,0,4);
+            $m_e = substr($end_date,5,2);
+            $d_e = substr($end_date,8,2);
+            $sqlquery1 = "SELECT search_input, EXTRACT( HOUR FROM search_time) AS hours, COUNT(*) FROM search_history WHERE EXTRACT( YEAR FROM search_date ) BETWEEN ". $y_s . " AND " . $y_e ." 
+                          AND EXTRACT( MONTH FROM search_date ) BETWEEN ". $m_s . " AND " . $m_e ." AND EXTRACT( DAY FROM search_date ) BETWEEN ". $d_s . " AND " . $d_e ."  
+                          GROUP BY search_input,hours ORDER BY search_input, hours";
+            $sqlquery2 = 'SELECT hour FROM hours ORDER BY hour';
+            $sqlquery3 = 's0001 bigint, s0102 bigint, s0203 bigint, s0304 bigint, s0405 bigint, s0506 bigint, s0607 bigint, 
+	                      s0708 bigint, s0809 bigint, s0910 bigint, s1011 bigint, s1112 bigint, s1213 bigint, s1314 bigint, s1415 bigint, 
+	                      s1516 bigint, s1617 bigint, s1718 bigint, s1819 bigint, s1920 bigint, s2021 bigint, s2122 bigint, s2223 bigint, s2300 bigint';
+
+            //pristupamo bazi za actual pivotiranje
+            try{
+                $db = DB::getConnection();
+                $query = "SELECT * FROM crosstab('". $sqlquery1 . "','". $sqlquery2 ."') AS pivot_table( tsquery TEXT,". $sqlquery3.") ORDER BY tsquery";
+                $sm = $db->prepare( $query );
+                $sm->execute( );
+            }
+            catch( PDOException $e ) { exit( 'PDO error ' . $e->getMessage() ); }
+
+            $rows = [];
+            while( $row = $sm->fetch() ) array_push($rows, $row );
+
+            //vrati
+            if( count($rows) === 0 ) return false;
+            else return [$header, $rows];
+        }
+        else return false;
+    }
+
+    function create_temp_table_days(){
+        try{
+            $db = DB::getConnection();
+            $query = 'CREATE TEMP TABLE days( day date )';
+            $sm = $db->prepare( $query );
+            $sm->execute( );
+        }
+        catch( PDOException $e ) { exit( 'PDO error ' . $e->getMessage() ); }
+    }
+
+    function drop_temp_table_days(){
+        try{
+            $db = DB::getConnection();
+            $query = 'DROP TABLE days';
+            $sm = $db->prepare( $query );
+            $sm->execute( );
+        }
+        catch( PDOException $e ) { exit( 'PDO error ' . $e->getMessage() ); }
+    }
+
+    function insert_day_in_temp_table_days($day){
+        try{
+            $db = DB::getConnection();
+            $query = 'INSERT INTO days(day) VALUES ( :day)';
+            $sm = $db->prepare( $query );
+            $sm->execute( array( 'day' => $day ) );
+        }
+        catch( PDOException $e ) { exit( 'PDO error ' . $e->getMessage() ); }
+    }
+
 };
 
 ?>
