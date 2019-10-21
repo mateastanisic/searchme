@@ -4,12 +4,28 @@
     <h2> time analysis  </h2> <br>
     <form method="post" action="<?php echo __SITE_URL; ?>/index.php?rt=index/statistics" >
         <div class="tab">
-            <h3> choose date period for time analysis</h3>
-            start date: <input type="date" class="datepicker"  name="start"  min="2019-01-01" max="2019-10-30"><br><br>
-            end date:<input type="date" class="datepicker" name="end"  min="2019-01-01" max="2019-10-30"><br><br>
+            <?php
+                if(isset($start) && isset($end)){
+                ?>
+                    <h3> choose date period for time analysis</h3>
+                    start date: <input type="date" class="datepicker"  name="start"  min="2019-01-01" max="2019-10-30" value="<?php echo $start ?>"><br><br>
+                    end date:<input type="date" class="datepicker" name="end"  min="2019-01-01" max="2019-10-30" value="<?php echo $end ?>"><br><br>
 
-            analyse data <input type="radio" name="date_hour" value="date" checked> per date <input type="radio" name="date_hour" value="hour" > per hour <br> <br>
-            <button type="submit" class="analyse_button" > analyse </button> <br />
+                    analyse data <input type="radio" name="date_hour" value="date" checked> per date <input type="radio" name="date_hour" value="hour" > per hour <br> <br>
+                    <button type="submit" class="analyse_button" > analyse </button> <br />
+                <?php
+                }
+                else{
+                ?>
+                    <h3> choose date period for time analysis</h3>
+                    start date: <input type="date" class="datepicker"  name="start"  min="2019-01-01" max="2019-10-30"><br><br>
+                    end date:<input type="date" class="datepicker" name="end"  min="2019-01-01" max="2019-10-30"><br><br>
+
+                    analyse data <input type="radio" name="date_hour" value="date" checked> per date <input type="radio" name="date_hour" value="hour" > per hour <br> <br>
+                    <button type="submit" class="analyse_button" > analyse </button> <br />
+                <?php
+                }
+            ?>
         </div>
     </form>
     <br><br>

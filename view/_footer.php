@@ -9,7 +9,12 @@
     $("document").ready(function() {
         //pritiskom na naslov "vraćamo se na početnu stranicu" ~ hidamo sve s desne strane
         $('#page_name').on( "click", function() {
-            $(".right").hide();
+            var loc1 = window.location.pathname;
+            var loc2 = {
+                url : '?rt=index/index'
+            };
+            console.log(loc1);
+            window.location.assign(loc1+loc2.url);
         });
         //pritiskom na neku od opcija otvara nam se ili forma za unos novog filma u bazu
         //ili forma za pretraživanje po bazi
